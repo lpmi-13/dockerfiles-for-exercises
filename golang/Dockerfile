@@ -13,6 +13,7 @@ RUN apk add --no-cache curl
 
 COPY --from=builder /app/server /server
 
+EXPOSE 5000
 EXPOSE 8000
 
 CMD ["/server"]
