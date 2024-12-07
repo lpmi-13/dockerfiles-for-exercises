@@ -3,9 +3,6 @@ receivers:
         protocols:
             grpc:
                 endpoint: '0.0.0.0:4317'
-                tls:
-                    insecure: true
-                    insecure_skip_verify: true
             http:
                 endpoint: '0.0.0.0:4318'
 
