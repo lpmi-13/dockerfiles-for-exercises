@@ -1,4 +1,3 @@
-// app.ts
 import express, {
     Request,
     Response,
@@ -15,7 +14,7 @@ interface ErrorWithStack extends Error {
 }
 
 const app = express();
-let server:Server;
+let server: Server;
 
 // Custom request interface to handle request timing
 interface TimedRequest extends Request {
