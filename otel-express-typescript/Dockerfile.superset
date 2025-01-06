@@ -1,0 +1,41 @@
+FROM apache/superset
+
+USER root
+
+# Install additional dependencies including clickhouse
+RUN pip install clickhouse-connect
+
+# Switch back to superset user
+USER superset
+
+# Set environment variables
+ENV SUPERSET_SECRET_KEY='BIGBABYBOOYAH'
+ENV FLASK_APP="superset.app:create_app()"
+ENV GUNICORN_CMD_ARGS="--workers=3 --timeout=120 --bind=0.0.0.0:8088 --limit-request-line=0 --limit-request-field_size=0"
+ENV PYTHONPATH=/app/superset
+
+# Create an admin user
+RUN superset fab create-admin \
+    --username admin \
+    --firstname Superset \
+    --lastname Admin \
+    --email admin@superset.com \
+    --password admin
+
+RUN superset db upgrade
+
+RUN superset init
+
+COPY --chown=superset:superset ./setup_db.py /app/superset/setup_db.py
+# this is the database connection and schema for clickhouse
+COPY --chown=superset:superset ./db_import.zip /app/superset/db_import.zip
+
+# We import the datasource here because it won't resolve the DNS until the container is actually deployed in the cluster
+RUN echo '#!/bin/bash' > /app/superset/docker-entrypoint.sh && \
+    echo 'python /app/superset/setup_db.py || true' >> /app/superset/docker-entrypoint.sh && \
+    echo 'superset import-datasources -p /app/superset/db_import.zip' >> /app/superset/docker-entrypoint.sh &&  \
+    echo 'exec gunicorn "superset.app:create_app()"' >> /app/superset/docker-entrypoint.sh && \
+    chmod +x /app/superset/docker-entrypoint.sh
+
+CMD ["/app/superset/docker-entrypoint.sh"]
+
