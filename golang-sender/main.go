@@ -16,7 +16,7 @@ var (
 	// Prometheus metrics
 	httpRequestsTotal = promauto.NewCounterVec(
 		prometheus.CounterOpts{
-			Name: "http_requests_total",
+			Name: "requests_to_receiver",
 			Help: "Total number of HTTP requests",
 		},
 		[]string{"endpoint", "status_code"},
@@ -59,7 +59,7 @@ func main() {
 	go func() {
 		for {
 			makeHTTPRequest(endpoint)
-			time.Sleep(time.Duration(requestInterval) * time.Second)
+			time.Sleep(time.Duration(requestInterval) * time.Millisecond)
 		}
 	}()
 
